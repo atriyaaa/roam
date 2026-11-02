@@ -11,6 +11,7 @@ const links = [
   { href: "/trips/budget", label: "Budget" },
   { href: "/trips/expenses", label: "Expenses" },
   { href: "/trips/weather", label: "Weather" },
+  { href: "/trips/export", label: "Export PDF" },
   { href: "/trips/cloud", label: "Cloud saves" },
   { href: "/trips/share", label: "Share" },
   { href: "/account", label: "Account" },
@@ -18,6 +19,7 @@ const links = [
 
 export function SiteHeader() {
   const pathname = usePathname();
+
   const isAccountPage =
     pathname === "/account" || pathname.startsWith("/account/");
 
