@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { accountStorage } from "@/lib/account-storage";
+import { EXPENSES_KEY, readLedger } from "@/lib/shared-expenses";
 import { SiteHeader } from "@/components/site-header";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,6 +25,7 @@ type TripSnapshot = {
   bookings: JsonObject[];
   budget: JsonObject | null;
   locations: JsonObject | null;
+  expenses: JsonObject | null;
 };
 
 type CloudTrip = {
@@ -41,6 +43,7 @@ const keys = {
   budgets: "roam.budgets.v1",
   locations: "roam.locations.v1",
   revisions: "roam.cloud-revisions.v1",
+  expenses: EXPENSES_KEY,
 };
 
 function isObject(value: unknown): value is JsonObject {
@@ -94,6 +97,12 @@ function optionalObject(value: unknown): JsonObject | null {
   return value;
 }
 
+function expenseObject(value: unknown): JsonObject | null {
+  const object = optionalObject(value);
+  if (object) readLedger(object);
+  return object;
+}
+
 function captureTrip(trip: LocalTrip): TripSnapshot {
   return {
     version: 1,
@@ -107,6 +116,7 @@ function captureTrip(trip: LocalTrip): TripSnapshot {
     ),
     budget: optionalObject(readObject(keys.budgets)[trip.id]),
     locations: optionalObject(readObject(keys.locations)[trip.id]),
+    expenses: expenseObject(readObject(keys.expenses)[trip.id]),
   };
 }
 
@@ -136,6 +146,7 @@ function readSnapshot(value: unknown, id: string): TripSnapshot {
     bookings: value.bookings as JsonObject[],
     budget: optionalObject(value.budget),
     locations: optionalObject(value.locations),
+    expenses: expenseObject(value.expenses),
   };
 }
 
@@ -194,6 +205,7 @@ function restoreSnapshot(snapshot: TripSnapshot, revision: number) {
     ],
     [keys.budgets]: mergeObject(keys.budgets, snapshot.budget),
     [keys.locations]: mergeObject(keys.locations, snapshot.locations),
+    [keys.expenses]: mergeObject(keys.expenses, snapshot.expenses),
     [keys.revisions]: {
       ...readObject(keys.revisions),
       [id]: revision,
@@ -472,7 +484,7 @@ export default function CloudPage() {
           <p className="mt-2 text-sm leading-relaxed text-muted">
             Save after making changes. Restore before continuing on
             another device. Restoring replaces that trip’s local
-            details with the cloud version.
+            details, including shared expenses, with the cloud version.
           </p>
         </div>
 
@@ -497,7 +509,7 @@ export default function CloudPage() {
               </h2>
 
               <p className="mt-2 text-sm text-muted">
-                Includes the itinerary, wishlist, bookings, budget and pins.
+                Includes the itinerary, wishlist, bookings, budget, pins and shared expenses.
               </p>
 
               <div className="mt-5 space-y-4">
