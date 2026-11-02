@@ -28,11 +28,12 @@ export default function AccountPage() {
     let authChanged = false;
 
     const confirmationFailed =
-      new URLSearchParams(window.location.search).get("confirmation") === "failed";
+      new URLSearchParams(window.location.search).get("confirmation") ===
+      "failed";
 
     if (confirmationFailed) {
       setError(
-        "We couldn’t complete that email confirmation. If you already confirmed your email, try logging in. Otherwise, sign up again to request another confirmation.",
+        "That confirmation link couldn’t be completed. If your email is already confirmed, try logging in.",
       );
     }
 
@@ -40,6 +41,7 @@ export default function AccountPage() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!active) return;
+
       authChanged = true;
       setUser(session?.user ?? null);
       setLoading(false);
@@ -47,18 +49,26 @@ export default function AccountPage() {
 
     async function loadUser() {
       try {
-        const { data, error: authError } = await supabase.auth.getUser();
+        const { data, error: authError } =
+          await supabase.auth.getUser();
 
         if (!active || authChanged) return;
 
         setUser(data.user);
 
-        if (authError && authError.name !== "AuthSessionMissingError") {
-          setError("Your session couldn’t be checked. Try refreshing or logging in.");
+        if (
+          authError &&
+          authError.name !== "AuthSessionMissingError"
+        ) {
+          setError(
+            "Your session couldn’t be checked. Try refreshing or logging in.",
+          );
         }
       } catch {
         if (active && !authChanged) {
-          setError("We couldn’t connect to your account. Check your connection.");
+          setError(
+            "We couldn’t connect to your account. Check your connection.",
+          );
         }
       } finally {
         if (active) setLoading(false);
@@ -97,13 +107,15 @@ export default function AccountPage() {
 
     try {
       if (mode === "signup") {
-        const { data, error: signupError } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
+        const { data, error: signupError } =
+          await supabase.auth.signUp({
+            email: email.trim(),
+            password,
+            options: {
+              emailRedirectTo:
+                `${window.location.origin}/auth/callback`,
+            },
+          });
 
         if (signupError) throw signupError;
 
@@ -116,7 +128,7 @@ export default function AccountPage() {
         } else {
           setMode("login");
           setNotice(
-            "Check your inbox for a confirmation email. Open the link in this browser, then return here to log in. If you already have an account, log in instead.",
+            "Check your inbox for a confirmation email and open its link in this browser. If you already have an account, log in instead.",
           );
         }
       } else {
@@ -151,9 +163,8 @@ export default function AccountPage() {
     setNotice("");
 
     try {
-      const { error: logoutError } = await supabase.auth.signOut({
-        scope: "local",
-      });
+      const { error: logoutError } =
+        await supabase.auth.signOut({ scope: "local" });
 
       if (logoutError) throw logoutError;
 
@@ -190,11 +201,14 @@ export default function AccountPage() {
             </p>
 
             <div className="mt-8 max-w-lg rounded-3xl bg-sky p-6">
-              <h2 className="font-semibold">We’re connecting the pieces.</h2>
+              <h2 className="font-semibold">
+                Keep your journey together.
+              </h2>
+
               <p className="mt-3 text-sm leading-relaxed text-muted">
-                Accounts are ready in this step. Your existing trips
-                still live in this browser. Cloud saving and importing
-                those trips are coming next.
+                Plan in your browser, save a copy to your account
+                and restore it on another device. Use Cloud saves
+                whenever you’re ready to sync.
               </p>
             </div>
           </section>
@@ -220,7 +234,9 @@ export default function AccountPage() {
                   </p>
 
                   <div className="mt-7 flex flex-wrap gap-3">
-                    <ButtonLink href="/trips">Go to my trips ↗</ButtonLink>
+                    <ButtonLink href="/trips">
+                      Go to my trips ↗
+                    </ButtonLink>
 
                     <Button
                       variant="secondary"
@@ -231,9 +247,17 @@ export default function AccountPage() {
                     </Button>
                   </div>
 
+                  <ButtonLink
+                    href="/account/forgot-password"
+                    variant="ghost"
+                    className="mt-5"
+                  >
+                    Reset my password
+                  </ButtonLink>
+
                   <p className="mt-6 text-xs leading-relaxed text-muted">
-                    Browser-saved trips aren’t linked to this account
-                    yet. Logging out leaves those local trips in this browser.
+                    Save your latest changes to cloud before
+                    switching browsers or devices.
                   </p>
                 </>
               ) : (
@@ -267,13 +291,19 @@ export default function AccountPage() {
                   <form onSubmit={submitAuth} className="mt-6">
                     <fieldset disabled={busy} className="space-y-5">
                       <legend className="sr-only">
-                        {mode === "signup" ? "Create an account" : "Log in"}
+                        {mode === "signup"
+                          ? "Create an account"
+                          : "Log in"}
                       </legend>
 
                       <div>
-                        <label htmlFor="email" className="text-sm font-semibold">
+                        <label
+                          htmlFor="email"
+                          className="text-sm font-semibold"
+                        >
                           Email address
                         </label>
+
                         <input
                           id="email"
                           type="email"
@@ -287,17 +317,25 @@ export default function AccountPage() {
                       </div>
 
                       <div>
-                        <label htmlFor="password" className="text-sm font-semibold">
+                        <label
+                          htmlFor="password"
+                          className="text-sm font-semibold"
+                        >
                           Password
                         </label>
+
                         <input
                           id="password"
                           type="password"
                           autoComplete={
-                            mode === "signup" ? "new-password" : "current-password"
+                            mode === "signup"
+                              ? "new-password"
+                              : "current-password"
                           }
                           value={password}
-                          onChange={(event) => setPassword(event.target.value)}
+                          onChange={(event) =>
+                            setPassword(event.target.value)
+                          }
                           minLength={mode === "signup" ? 8 : undefined}
                           required
                           className={inputStyles}
@@ -318,6 +356,7 @@ export default function AccountPage() {
                           >
                             Confirm password
                           </label>
+
                           <input
                             id="confirm-password"
                             type="password"
@@ -342,16 +381,31 @@ export default function AccountPage() {
                       </Button>
                     </fieldset>
                   </form>
+
+                  {mode === "login" && (
+                    <a
+                      href="/account/forgot-password"
+                      className="mt-5 inline-block text-sm font-semibold text-terracotta underline underline-offset-4"
+                    >
+                      Forgot your password?
+                    </a>
+                  )}
                 </>
               )}
 
               {error && (
-                <p role="alert" className="mt-5 text-sm leading-relaxed text-terracotta">
+                <p
+                  role="alert"
+                  className="mt-5 text-sm leading-relaxed text-terracotta"
+                >
                   {error}
                 </p>
               )}
 
-              <p role="status" className="mt-5 text-sm leading-relaxed text-muted">
+              <p
+                role="status"
+                className="mt-5 text-sm leading-relaxed text-muted"
+              >
                 {notice}
               </p>
             </CardContent>
