@@ -9,6 +9,8 @@ const links = [
   { href: "/trips/bookings", label: "Bookings" },
   { href: "/trips/budget", label: "Budget" },
   { href: "/trips/map", label: "Map" },
+  { href: "/trips/cloud", label: "Cloud saves" },
+  { href: "/trips/share", label: "Share" },
 ];
 
 export function SiteHeader() {
